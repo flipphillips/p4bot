@@ -12,10 +12,22 @@ services:
       # Optional: mount local scripts and secrets into the container for testing
       - ./scripts:/scripts:ro
       - ./scripts/secrets:/scripts/secrets:ro
+      # Optional: forward your host SSH agent into the container for git/ssh auth.
+      # On the host, ensure SSH agent is running and SSH_AUTH_SOCK is set.
+      # When starting compose use: `docker compose -f Docker/docker-compose.dev.yml up --build`
+      # and pass SSH_AUTH_SOCK into the environment so the bind will succeed.
+      # Example (bash):
+      #   export SSH_AUTH_SOCK=$SSH_AUTH_SOCK
+      #   docker compose -f Docker/docker-compose.dev.yml up --build
+      # This mounts the host socket into /ssh-agent inside the container and
+      # sets SSH_AUTH_SOCK accordingly so `ssh` can use the forwarded agent.
+      - ${SSH_AUTH_SOCK:-/ssh-auth-not-set}:/ssh-agent:ro
     ports:
       - "8080:8080"
     environment:
       - FLASK_ENV=development
       - P4_SCRIPT_ROOT=/scripts
+      # If forwarding SSH agent, set the container's SSH_AUTH_SOCK
+      - SSH_AUTH_SOCK=/ssh-agent
     command: ["gunicorn","--reload","-b","0.0.0.0:8080","app.server:app"]
     tty: true

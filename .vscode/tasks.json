@@ -11,8 +11,7 @@
       "label": "docker:up",
       "type": "shell",
       "command": "docker compose -f Docker/docker-compose.yml up --build -d",
-      "problemMatcher": [],
-      "isBackground": true
+      "problemMatcher": []
     },
     {
       "label": "docker:down",
@@ -54,6 +53,18 @@
       "label": "docker:dev-test",
       "type": "shell",
       "command": "docker compose -f Docker/docker-compose.yml up --build -d && docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"chmod +x /scripts/login.sh && /scripts/login.sh\" && docker compose -f Docker/docker-compose.yml exec p4bot python3 /srv/p4bot/app/test_p4python.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:rebuild",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml build --no-cache",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:rebuild-reopen",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml down && docker compose -f Docker/docker-compose.yml build --no-cache && docker compose -f Docker/docker-compose.yml up -d",
       "problemMatcher": []
     }
   ],

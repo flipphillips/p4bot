@@ -15,3 +15,7 @@ services:
       - ../:/srv/p4bot:cached
       - ./app:/scripts
     restart: unless-stopped
+    # Override the image CMD (which starts gunicorn) so the container
+    # comes up for interactive/manual testing. Run the server manually
+    # inside the container when you're ready (see notes below).
+    command: ["/bin/sh", "-c", "tail -f /dev/null"]

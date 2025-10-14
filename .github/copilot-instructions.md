@@ -16,6 +16,9 @@ Project-specific conventions
 - Response limits: Slack responses are truncated to ~2900 characters in `server.py`. Any change to output size or formatting must keep Slack limits in mind.
 
 Developer workflows & common commands
+- Priority: I am using VS Code Insiders, I Prefer using those tools when possible and to take advantage of features it provides -especially- via devcontainers. 
+- I prefer vs code 'tasks' over CLI and Makefile. 
+- I -am- very CLI / UNIX proficient but prefer to take advantage of VSCode's features and integrations.
 - Build and run (compose): `docker compose up --build -d` (See top-level `README.md`). The service listens on 8080.
 - Development (live code): `docker compose -f docker-compose.dev.yml up --build` uses `gunicorn --reload` and mounts source for live edits.
 - Health check: `GET /healthz` (returns JSON {status: ok}).

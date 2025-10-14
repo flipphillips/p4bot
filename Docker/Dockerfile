@@ -10,7 +10,7 @@ WORKDIR /srv/p4bot
 # Install system build dependencies needed to build P4Python and other wheels
 RUN apt-get update && \
         apt-get install -y --no-install-recommends \
-            ca-certificates wget build-essential python3-venv python3-dev libssl-dev swig && \
+        ca-certificates wget git build-essential python3-venv python3-dev libssl-dev swig openssh-client && \
         rm -rf /var/lib/apt/lists/*
 
 # Create a lightweight Python virtual environment for the app and ensure pip is up-to-date
