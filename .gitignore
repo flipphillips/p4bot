@@ -1,0 +1,17 @@
+# Ignore any secrets directories containing sensitive data
+**/secrets/*
+# Allow placeholder files so empty directories can be tracked
+!**/secrets/.gitkeep
+!**/secrets/README.md
+
+# Ignore built/perforce config (local perforce config)
+perforce/p4config
+
+# Ignore shipped binary assets directories
+**/assets/*
+!**/assets/.gitkeep
+!**/assets/README.md
+
+# OS and python cache
+.DS_Store
+__pycache__/

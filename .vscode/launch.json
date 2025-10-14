@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Run test_p4python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/perforce/test_p4python.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: Module",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pdb",
+      "console": "integratedTerminal"
+    }
+  ]
+}

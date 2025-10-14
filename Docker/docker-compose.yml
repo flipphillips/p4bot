@@ -1,0 +1,16 @@
+services:
+  p4bot:
+    build: .
+    image: local/p4bot:latest
+    ports:
+      - "8080:8080"
+    environment:
+      P4_SCRIPT_ROOT: /scripts
+      SLACK_COMMAND_MAP: "{}"
+      P4PORT: "ssl:mss-perforce-01.rit.edu:1666"
+      P4USER: "p4status"
+      P4CLIENT: ""
+
+    volumes:
+      - ../../perforce:/scripts
+    restart: unless-stopped
