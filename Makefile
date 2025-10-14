@@ -1,4 +1,4 @@
-COMPOSE_FILE:=Docker/p4bot/docker-compose.yml
+COMPOSE_FILE:=Docker/docker-compose.yml
 SERVICE:=p4bot
 LIMIT ?= 3
 
