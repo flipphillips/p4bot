@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Docker Compose: Up (dev)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}",
+      "preLaunchTask": "docker-compose: up (dev)",
+      "runtimeExecutable": "echo",
+      "args": ["Compose up started"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

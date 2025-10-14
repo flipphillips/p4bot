@@ -24,32 +24,6 @@ ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install P4Python (Helix API) into the venv
-RUN pip install --no-cache-dir P4Python
-
-# Optional: provide a p4 CLI binary URL at build time using build-arg P4_CLI_URL
-ARG P4_CLI_URL=""
-RUN if [ -n "$P4_CLI_URL" ]; then \
-            echo "Downloading p4 from $P4_CLI_URL" && \
-            wget -O /usr/local/bin/p4 "$P4_CLI_URL" && \
-            chmod +x /usr/local/bin/p4 || (echo "Failed to fetch p4 from $P4_CLI_URL" && false); \
-        else \
-            echo "P4_CLI_URL not provided; p4 client will not be installed in the image"; \
-        fi
-
-# If a local asset matching the build arch exists, copy it into the image and pick the right one
-ARG TARGETARCH
-RUN mkdir -p /opt/p4-assets || true
-COPY assets/p4 /opt/p4-assets/p4
-COPY assets/p4-ARM /opt/p4-assets/p4-ARM
-RUN if [ "${TARGETARCH}" = "arm64" ] && [ -f /opt/p4-assets/p4-ARM ]; then \
-            cp /opt/p4-assets/p4-ARM /usr/local/bin/p4; \
-        elif [ -f /opt/p4-assets/p4-${TARGETARCH} ]; then \
-            cp /opt/p4-assets/p4-${TARGETARCH} /usr/local/bin/p4; \
-        elif [ -f /opt/p4-assets/p4 ]; then \
-            cp /opt/p4-assets/p4 /usr/local/bin/p4; \
-        fi && chmod +x /usr/local/bin/p4 || true
-
 # Do not attempt to copy local perforce secrets into the build context.
 # Prefer mounting the development scripts directory (e.g. `Docker/app`) into /scripts
 ENV P4PASSWD_FILE=/scripts/secrets/p4passwd

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  p4bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: p4bot:dev
+    volumes:
+      # Mount app for live edits in dev (overrides the copied app in the image)
+      - ./app:/srv/p4bot/app:cached
+      # Optional: mount local scripts and secrets into the container for testing
+      - ./scripts:/scripts:ro
+      - ./scripts/secrets:/scripts/secrets:ro
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_ENV=development
+      - P4_SCRIPT_ROOT=/scripts
+    command: ["gunicorn","--reload","-b","0.0.0.0:8080","app.server:app"]
+    tty: true

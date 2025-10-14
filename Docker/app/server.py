@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 from flask import Flask, jsonify, request
+from P4 import P4, P4Exception
 
 
 def create_app() -> Flask:
@@ -28,29 +29,18 @@ def create_app() -> Flask:
         mapped = command_map.get(command)
         args = shlex.split(text) if text else []
         parts = [*(mapped or []), *args]
-
         if not parts:
-            return _format("Tell me which script to run.")
+            return _format("Tell me which command to run. Use a mapping that begins with 'p4'.")
 
-        script = (script_root / parts[0]).resolve()
-        if not script.exists():
-            return _format(f"Script '{parts[0]}' not found.")
+        # Only support P4 commands executed via P4Python. No shell/script fallbacks.
+        if parts[0] != "p4":
+            return _format("Only p4-based commands are supported. Update SLACK_COMMAND_MAP to map the slash command to ['p4', '<cmd>', ...].")
+
         try:
-            script.relative_to(script_root)
-        except ValueError:
-            return _format("Script path must stay under the script root.")
-
-        result = subprocess.run(
-            [str(script), *parts[1:]],
-            capture_output=True,
-            text=True,
-        )
-
-        output = result.stdout.strip() or "Command completed successfully with no output."
-        if result.returncode:
-            output = f"exit {result.returncode}: {result.stderr.strip() or output}"
-
-        return _format(output[:2900])
+            out = _run_p4_command(parts, script_root=script_root)
+        except Exception as e:  # include P4Exception
+            return _format(f"p4 error: {e}")
+        return _format(out[:2900])
 
     @app.post("/slack/status")
     def slack_status():
@@ -65,11 +55,14 @@ def create_app() -> Flask:
 
         # script and script_root
         script_root = Path(os.environ.get("P4_SCRIPT_ROOT", "/scripts")).resolve()
-        script = (script_root / "p4status.sh").resolve()
-        if not script.exists():
-            return _format("p4status.sh not found on server"), 404
+        # Always use Python-backed status via P4Python. No shell fallback.
+        try:
+            out = _run_p4_status(pathspec, script_root=script_root)
+            return _format(out[:2900])
+        except Exception as e:
+            return _format(f"p4 status error: {e}"), 500
 
-        # load simple perforce config if present: a minimal KEY=VALUE per line file
+        # (dead code removed)
         cfg = {}
         cfgfile = script_root / "p4config"
         if cfgfile.exists():
@@ -119,6 +112,146 @@ def _parse_command_map(raw: str) -> dict[str, list[str]]:
 def _format(message: str):
     return {"response_type": "ephemeral", "text": message}
 
+# perforce things
+
+P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/scripts/secrets/p4passwd")
+
+def read_password(path: str) -> str:
+    if not os.path.exists(path):
+        return ""
+    with open(path, "r") as f:
+        data = f.read().strip()
+    # accept either raw password or key=value style
+    if data.startswith("password="):
+        return data.split("=", 1)[1]
+    return data
+
+password = read_password(P4PASSWD_FILE)
+
+### P4 helpers ---------------------------------------------------------------
+
+# Create a P4 instance on demand so module import doesn't attempt network ops.
+def _p4_instance(script_root: Path | str | None = None) -> P4:
+    p4 = P4()
+    # load optional p4config from the script_root if present
+    if script_root:
+        cfgfile = Path(script_root) / "p4config"
+        if cfgfile.exists():
+            for ln in cfgfile.read_text().splitlines():
+                ln = ln.strip()
+                if not ln or ln.startswith('#'):
+                    continue
+                if '=' in ln:
+                    k, v = ln.split('=', 1)
+                    k = k.strip()
+                    v = v.strip()
+                    if k == 'P4PASSWD' and v:
+                        p4.password = v
+                    elif k == 'P4PORT':
+                        p4.port = v
+                    elif k == 'P4USER':
+                        p4.user = v
+    # also respect environment-derived password
+    if password:
+        p4.password = password
+    return p4
+
+
+def _run_p4_command(parts: list[str], script_root: Path | None = None) -> str:
+    """Run a p4 command using P4Python. parts begins with 'p4' then the command and args.
+
+    Example: ['p4', 'files', '//depot/...']
+    """
+    if len(parts) < 2:
+        raise ValueError("no p4 command provided")
+    cmd = parts[1]
+    args = parts[2:]
+    p4 = _p4_instance(script_root)
+    try:
+        p4.connect()
+        # login if password available
+        if getattr(p4, 'password', None):
+            try:
+                p4.run_login(p4.password)
+            except P4Exception:
+                # continue; some servers may not require login
+                pass
+        # run the command; use run(cmd, *args) which returns list/dicts
+        result = p4.run(cmd, *args)
+        # format result: join by newline, for dict results try to stringify
+        out_lines: list[str] = []
+        for item in result:
+            if isinstance(item, dict):
+                # convert dict to key: value lines
+                for k, v in item.items():
+                    out_lines.append(f"{k}: {v}")
+            else:
+                out_lines.append(str(item))
+        return "\n".join(out_lines) or "(no output)"
+    finally:
+        try:
+            p4.disconnect()
+        except Exception:
+            pass
+
+
+def _run_p4_status(pathspec: str, script_root: Path | None = None) -> str:
+    """Simple status summary using P4Python similar to p4status.sh's expected output.
+
+    This is a minimal implementation: it runs `opened` and `changes` or `files` as needed
+    to produce some useful text for Slack.
+    """
+    p4 = _p4_instance(script_root)
+    try:
+        p4.connect()
+        if getattr(p4, 'password', None):
+            try:
+                p4.run_login(p4.password)
+            except P4Exception:
+                pass
+
+        lines: list[str] = []
+        # show opened files under the pathspec
+        try:
+            opened = p4.run('opened', pathspec)
+            if opened:
+                lines.append(f"Opened files ({len(opened)}):")
+                for o in opened:
+                    if isinstance(o, dict):
+                        lines.append(f"{o.get('clientFile') or o.get('depotFile')} - {o.get('action')}")
+                    else:
+                        lines.append(str(o))
+            else:
+                lines.append("No opened files.")
+        except P4Exception:
+            lines.append("Could not fetch opened files.")
+
+        # show recent changelists touching the pathspec
+        try:
+            changes = p4.run('changes', '-m', '10', pathspec)
+            if changes:
+                lines.append(f"Recent changes ({len(changes)}):")
+                for ch in changes:
+                    if isinstance(ch, dict):
+                        lines.append(f"{ch.get('change')}: {ch.get('desc','').splitlines()[0]}")
+                    else:
+                        lines.append(str(ch))
+            else:
+                lines.append("No recent changes.")
+        except P4Exception:
+            lines.append("Could not fetch recent changes.")
+
+        return "\n".join(lines) or "(no output)"
+    finally:
+        try:
+            p4.disconnect()
+        except Exception:
+            pass
+
+# instance reserved for backwards-compat if needed
+p4 = None
+
+### main
 
 app = create_app()
 

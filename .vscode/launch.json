@@ -23,6 +23,18 @@
       "request": "launch",
       "module": "pdb",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Docker Compose: Up (dev)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}",
+      "preLaunchTask": "docker-compose: up (dev)",
+      "runtimeExecutable": "echo",
+      "args": [
+        "Compose up started"
+      ],
+      "console": "integratedTerminal"
     }
   ]
 }
