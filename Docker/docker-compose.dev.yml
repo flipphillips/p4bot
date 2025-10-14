@@ -6,15 +6,14 @@ services:
     image: p4bot:dev
     volumes:
       - ./app:/srv/p4bot/app:cached
-      - ./secrets/p4tickets:/root/.p4tickets:ro
-      - ./secrets/p4config:/root/.p4config:ro
-      - ${SSH_AUTH_SOCK:-/ssh-auth-not-set}:/ssh-agent:ro
+      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4tickets:/root/.p4tickets:ro
+      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4config:/root/.p4config:ro
+      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4trust:/root/.p4trust:ro
     ports:
       - "8080:8080"
     environment:
-      - FLASK_ENV=development
-      - SSH_AUTH_SOCK=/ssh-agent
-      - P4TICKETS=/root/.p4tickets
-      - P4CONFIG=/root/.p4config
-    command: ["gunicorn", "--reload", "-b", "0.0.0.0:8080", "app.server:app"]
+      FLASK_ENV: development
+      P4CONFIG: "/root/.p4config"
+    command: ["/bin/sh", "-c", "tail -f /dev/null"]
+    stdin_open: true
     tty: true

@@ -1,74 +1,83 @@
 #!/usr/bin/env python3
-"""p4python connectivity test that attempts to authenticate using the
-secrets file and then runs a simple `info` command via P4Python.
-
-This script will attempt to use the environment or `P4TICKETS`/`P4CONFIG` to
-authenticate and then import P4 to run `info`. It no longer expects a
-`/scripts` hierarchy.
-P4 to run `info`. Output is JSON for easy parsing.
-"""
-
 import json
 import os
-import subprocess
 import sys
 from P4 import P4, P4Exception
 
-P4USER = os.environ.get("P4USER", "p4status")
+# Minimal p4python test: read env, connect, run info. Auto-trust once on SSL
+# errors and persist a small container-local marker.
+
 P4PORT = os.environ.get("P4PORT")
-P4TICKETS = os.environ.get("P4TICKETS", "/root/.p4tickets")
+P4USER = os.environ.get("P4USER")
+P4TICKETS = os.environ.get("P4TICKETS")
 
-def _json_err(msg, phase="p4python", extra=None, code=2):
-    out = {"ok": False, "phase": phase, "error": msg}
-    if extra:
-        out.update(extra)
-    print(json.dumps(out))
-    sys.exit(code)
+# If a P4CONFIG file is provided, read values from it when env vars are missing
+cfg_path = os.environ.get("P4CONFIG") or "/root/.p4config"
+if os.path.exists(cfg_path):
+    try:
+        for ln in open(cfg_path, "r").read().splitlines():
+            ln = ln.strip()
+            if not ln or ln.startswith("#"):
+                continue
+            if "=" in ln:
+                k, v = ln.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                if k == "P4PORT" and not P4PORT:
+                    P4PORT = v
+                elif k == "P4USER" and not P4USER:
+                    P4USER = v
+                elif k == "P4TICKETS" and not P4TICKETS:
+                    P4TICKETS = v
+    except Exception:
+        # if parsing fails, continue with env values
+        pass
 
-
-# Make sure P4TICKETS env is visible to P4Python
-os.environ["P4TICKETS"] = P4TICKETS
+# default values
+P4USER = P4USER or "p4status"
+P4TICKETS = P4TICKETS or "/root/.p4tickets"
+TRUST_MARKER = "/root/.p4trusted"
 
 if not P4PORT:
-    _json_err("P4PORT not set. Please set the Perforce server in $P4PORT (e.g. perforce:1666)")
+    print(json.dumps({"ok": False, "error": "P4PORT not set"}))
+    sys.exit(2)
+
+os.environ["P4TICKETS"] = P4TICKETS
 
 p4 = P4()
 p4.port = P4PORT
 p4.user = P4USER
 
-# Basic diagnostics helpful for debugging
-diag = {
-    "P4PORT": P4PORT,
-    "P4USER": P4USER,
-    "P4TICKETS": P4TICKETS,
-    "ticket_exists": os.path.exists(P4TICKETS),
-}
+def out_err(msg):
+    print(json.dumps({"ok": False, "error": msg}))
+    sys.exit(2)
 
 try:
     p4.connect()
     info = p4.run("info")
     p4.disconnect()
-    print(json.dumps({"ok": True, "phase": "info", "info": info, "diag": diag}))
+    print(json.dumps({"ok": True, "info": info}))
     sys.exit(0)
 except P4Exception as e:
-    # try to disconnect cleanly
-    try:
-        p4.disconnect()
-    except Exception:
-        pass
-
     msg = str(e)
-    extra = {"diag": diag}
-
-    # Helpful hint for SSL/trust problems
     if any(x in msg.lower() for x in ("ssl", "trust", "certificate", "fingerprint")):
-        hint = (
-            "SSL/trust error detected. If this is the first time connecting to the server, "
-            "you may need to accept the server fingerprint. Two options:\n"
-            "  1) On a host with the Perforce CLI: run `p4 trust -y` against $P4PORT, then copy ~/.p4tickets into the container.\n"
-            "  2) Programmatically accept via P4Python using `p4.run('trust','-y')` (requires P4Python & connect).\n"
-            "Current error: " + msg
-        )
-        _json_err(hint, extra=extra)
-
-    _json_err(msg, extra=extra)
+        if os.path.exists(TRUST_MARKER):
+            out_err(msg)
+        try:
+            p4.connect()
+            try:
+                p4.run("trust", "-y")
+            except P4Exception:
+                pass
+            info = p4.run("info")
+            p4.disconnect()
+            try:
+                with open(TRUST_MARKER, "w") as f:
+                    f.write("trusted\n")
+            except Exception:
+                pass
+            print(json.dumps({"ok": True, "info": info}))
+            sys.exit(0)
+        except Exception as e2:
+            out_err(str(e2))
+    out_err(msg)

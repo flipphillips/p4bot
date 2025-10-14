@@ -116,10 +116,18 @@ def _format(message: str):
 P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/root/.p4tickets")
 
 def read_password(path: str) -> str:
-    if not os.path.exists(path):
+    # Be defensive: the mounted path may be a directory (user mounted a folder)
+    # or otherwise unreadable. In those cases return empty string so the
+    # application doesn't crash at import time.
+    try:
+        if os.path.isdir(path):
+            return ""
+        if not os.path.exists(path):
+            return ""
+        with open(path, "r") as f:
+            data = f.read().strip()
+    except (IsADirectoryError, PermissionError, OSError):
         return ""
-    with open(path, "r") as f:
-        data = f.read().strip()
     # accept either raw password or key=value style
     if data.startswith("password="):
         return data.split("=", 1)[1]

@@ -6,11 +6,8 @@ services:
       - "8080:8080"
     environment:
       - SLACK_COMMAND_MAP={}
-      - P4PORT=ssl:mss-perforce-01.rit.edu:1666
-      - P4USER=p4status
-      - P4CLIENT=
     volumes:
       - ../:/srv/p4bot:cached
       - ./app:/srv/p4bot/app:cached
     restart: unless-stopped
-    command: ["/bin/sh", "-c", "tail -f /dev/null"]
+    command: ["gunicorn", "-b", "0.0.0.0:8080", "app.server:app"]
