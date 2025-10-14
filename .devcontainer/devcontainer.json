@@ -9,7 +9,6 @@
     8080
   ],
   "postStartCommand": "/scripts/login.sh || true",
-  "postCreateCommand": "pip install --no-cache-dir P4Python || true",
   "customizations": {
     "vscode": {
       "settings": {
