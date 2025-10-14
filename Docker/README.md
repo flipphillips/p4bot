@@ -8,16 +8,15 @@ p4bot can surface command results back to a channel or DM.
 
 - `Dockerfile` — builds a tiny Python image with Flask, Gunicorn and Slack SDK.
 - `docker-compose.yml` — convenience wrapper for runtime configuration.
-- `app/server.py` — small Flask app that executes scripts underneath `/scripts`.
+- `app/server.py` — small Flask app that uses P4Python and reads perforce settings from `P4CONFIG` or environment variables.
 - `requirements.txt` — Python dependencies for the service.
 
 ## Prerequisites
 
 1. Slack app with a Slash Command pointing at
    `https://<host>/slack/command`.
-2. The Perforce helper scripts mounted inside the container for development;
-   by default the compose file binds `./app` to `/scripts` when running from
-   the `Docker` directory.
+2. The Perforce helper scripts live in `./app` and are mounted into the container
+   at `/srv/p4bot/app` for development.
 
 ## Quick start
 
@@ -100,8 +99,7 @@ curl \
 
 ## Environment variables
 
-- `P4_SCRIPT_ROOT` — directory inside the container that holds executable
-  scripts (default `/scripts`).
+- `P4CONFIG` / `P4TICKETS` — prefer using a `P4CONFIG` file or environment variables (`P4PORT`, `P4USER`, `P4TICKETS`) for Perforce settings.
 - `SLACK_COMMAND_MAP` — optional JSON map of slash commands to scripts and
   arguments. See below.
 
@@ -176,7 +174,7 @@ make p4status LIMIT=5
 make test_p4python
 
 # run an arbitrary command inside the container
-make exec CMD="bash -lc 'ls -la /scripts'"
+make exec CMD="bash -lc 'ls -la /srv/p4bot/app'"
 
 # stop the service
 make down

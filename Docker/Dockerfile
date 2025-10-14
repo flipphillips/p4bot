@@ -2,7 +2,6 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
         PYTHONUNBUFFERED=1 \
-        P4_SCRIPT_ROOT=/scripts \
         VIRTUAL_ENV=/opt/venv
 
 WORKDIR /srv/p4bot
@@ -25,8 +24,8 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Do not attempt to copy local perforce secrets into the build context.
-# Prefer mounting the development scripts directory (e.g. `Docker/app`) into /scripts
-ENV P4PASSWD_FILE=/scripts/secrets/p4passwd
+# Prefer mounting perforce config/ticket files into the container (P4CONFIG/P4TICKETS)
+ENV P4PASSWD_FILE=/root/.p4tickets
 
 # Copy the application code (mounted during dev via compose)
 COPY app ./app

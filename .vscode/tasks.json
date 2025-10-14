@@ -22,7 +22,7 @@
     {
       "label": "docker:login",
       "type": "shell",
-      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"chmod +x /scripts/login.sh && /scripts/login.sh\"",
+      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"echo 'no-op login (scripts removed)'\"",
       "problemMatcher": []
     },
     {
@@ -34,7 +34,7 @@
     {
       "label": "docker:p4status",
       "type": "shell",
-      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"/scripts/p4status.sh --limit 3\"",
+      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"python3 /srv/p4bot/app/p4status.py --limit 3\"",
       "problemMatcher": []
     },
     {
@@ -52,7 +52,7 @@
     {
       "label": "docker:dev-test",
       "type": "shell",
-      "command": "docker compose -f Docker/docker-compose.yml up --build -d && docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"chmod +x /scripts/login.sh && /scripts/login.sh\" && docker compose -f Docker/docker-compose.yml exec p4bot python3 /srv/p4bot/app/test_p4python.py",
+      "command": "docker compose -f Docker/docker-compose.yml up --build -d && docker compose -f Docker/docker-compose.yml exec p4bot python3 /srv/p4bot/app/test_p4python.py",
       "problemMatcher": []
     },
     {
@@ -72,7 +72,7 @@
     {
       "id": "dockerExecCommand",
       "type": "promptString",
-      "description": "Command to run inside the p4bot service (example: bash -lc 'ls -la /scripts')",
+      "description": "Command to run inside the p4bot service (example: bash -lc 'ls -la /srv/p4bot/app')",
       "default": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc 'bash'"
     }
   ]

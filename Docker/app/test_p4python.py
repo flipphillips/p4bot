@@ -2,8 +2,9 @@
 """p4python connectivity test that attempts to authenticate using the
 secrets file and then runs a simple `info` command via P4Python.
 
-This script will try a CLI `p4 login` using the password found at
-P4PASSWD_FILE (default: /scripts/secrets/p4passwd) and then import
+This script will attempt to use the environment or `P4TICKETS`/`P4CONFIG` to
+authenticate and then import P4 to run `info`. It no longer expects a
+`/scripts` hierarchy.
 P4 to run `info`. Output is JSON for easy parsing.
 """
 
@@ -11,48 +12,63 @@ import json
 import os
 import subprocess
 import sys
+from P4 import P4, P4Exception
 
-P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/scripts/secrets/p4passwd")
+P4USER = os.environ.get("P4USER", "p4status")
+P4PORT = os.environ.get("P4PORT")
+P4TICKETS = os.environ.get("P4TICKETS", "/root/.p4tickets")
 
-def read_password(path: str) -> str:
-    if not os.path.exists(path):
-        return ""
-    with open(path, "r") as f:
-        data = f.read().strip()
-    # accept either raw password or key=value style
-    if data.startswith("password="):
-        return data.split("=", 1)[1]
-    return data
+def _json_err(msg, phase="p4python", extra=None, code=2):
+    out = {"ok": False, "phase": phase, "error": msg}
+    if extra:
+        out.update(extra)
+    print(json.dumps(out))
+    sys.exit(code)
 
-password = read_password(P4PASSWD_FILE)
 
-# Try CLI login first if we have a password
-if password:
-    try:
-        # p4 login reads password from stdin
-        subprocess.run(["p4", "login"], input=password + "\n", text=True, check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        # print a JSON object describing the CLI login failure, then continue
-        print(json.dumps({"ok": False, "phase": "cli-login", "error": "p4 login failed", "stderr": e.stderr}))
-        # continue to attempt P4Python which may succeed for non-authenticated info
+# Make sure P4TICKETS env is visible to P4Python
+os.environ["P4TICKETS"] = P4TICKETS
 
-try:
-    from P4 import P4, P4Exception
-except Exception as e:
-    print(json.dumps({"ok": False, "phase": "import", "error": f"import failed: {e}"}))
-    sys.exit(1)
+if not P4PORT:
+    _json_err("P4PORT not set. Please set the Perforce server in $P4PORT (e.g. perforce:1666)")
 
 p4 = P4()
+p4.port = P4PORT
+p4.user = P4USER
+
+# Basic diagnostics helpful for debugging
+diag = {
+    "P4PORT": P4PORT,
+    "P4USER": P4USER,
+    "P4TICKETS": P4TICKETS,
+    "ticket_exists": os.path.exists(P4TICKETS),
+}
+
 try:
     p4.connect()
     info = p4.run("info")
     p4.disconnect()
-    print(json.dumps({"ok": True, "phase": "info", "info": info}))
+    print(json.dumps({"ok": True, "phase": "info", "info": info, "diag": diag}))
     sys.exit(0)
 except P4Exception as e:
+    # try to disconnect cleanly
     try:
         p4.disconnect()
     except Exception:
         pass
-    print(json.dumps({"ok": False, "phase": "p4python", "error": str(e)}))
-    sys.exit(2)
+
+    msg = str(e)
+    extra = {"diag": diag}
+
+    # Helpful hint for SSL/trust problems
+    if any(x in msg.lower() for x in ("ssl", "trust", "certificate", "fingerprint")):
+        hint = (
+            "SSL/trust error detected. If this is the first time connecting to the server, "
+            "you may need to accept the server fingerprint. Two options:\n"
+            "  1) On a host with the Perforce CLI: run `p4 trust -y` against $P4PORT, then copy ~/.p4tickets into the container.\n"
+            "  2) Programmatically accept via P4Python using `p4.run('trust','-y')` (requires P4Python & connect).\n"
+            "Current error: " + msg
+        )
+        _json_err(hint, extra=extra)
+
+    _json_err(msg, extra=extra)

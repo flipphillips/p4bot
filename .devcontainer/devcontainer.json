@@ -11,13 +11,12 @@
   "mounts": [
     "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,consistency=cached",
     "source=${localWorkspaceFolder}/app,target=/srv/p4bot/app,type=bind,consistency=cached",
-    "source=${localWorkspaceFolder}/scripts,target=/scripts,type=bind,consistency=cached"
   ],
   "remoteEnv": {
     "SSH_AUTH_SOCK": "/ssh-agent",
-    "P4_SCRIPT_ROOT": "/scripts"
+    "P4TICKETS": "/root/.p4tickets",
+    "P4CONFIG": "/root/.p4config"
   },
-  "postStartCommand": "/scripts/login.sh || true",
   "customizations": {
     "vscode": {
       "settings": {

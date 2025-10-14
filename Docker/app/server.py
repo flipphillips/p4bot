@@ -14,7 +14,8 @@ from P4 import P4, P4Exception
 def create_app() -> Flask:
     app = Flask(__name__)
 
-    script_root = Path(os.environ.get("P4_SCRIPT_ROOT", "/scripts")).resolve()
+    # script_root removed; prefer P4CONFIG and environment variables for perforce settings
+    script_root = None
     command_map = _parse_command_map(os.environ.get("SLACK_COMMAND_MAP", "{}"))
 
     @app.get("/healthz")
@@ -53,11 +54,9 @@ def create_app() -> Flask:
         text = request.form.get("text", "").strip()
         pathspec = text or "//..."
 
-        # script and script_root
-        script_root = Path(os.environ.get("P4_SCRIPT_ROOT", "/scripts")).resolve()
         # Always use Python-backed status via P4Python. No shell fallback.
         try:
-            out = _run_p4_status(pathspec, script_root=script_root)
+            out = _run_p4_status(pathspec, script_root=None)
             return _format(out[:2900])
         except Exception as e:
             return _format(f"p4 status error: {e}"), 500
@@ -114,7 +113,7 @@ def _format(message: str):
 
 # perforce things
 
-P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/scripts/secrets/p4passwd")
+P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/root/.p4tickets")
 
 def read_password(path: str) -> str:
     if not os.path.exists(path):
@@ -133,27 +132,28 @@ password = read_password(P4PASSWD_FILE)
 # Create a P4 instance on demand so module import doesn't attempt network ops.
 def _p4_instance(script_root: Path | str | None = None) -> P4:
     p4 = P4()
-    # load optional p4config from the script_root if present
-    if script_root:
-        cfgfile = Path(script_root) / "p4config"
-        if cfgfile.exists():
-            for ln in cfgfile.read_text().splitlines():
-                ln = ln.strip()
-                if not ln or ln.startswith('#'):
-                    continue
-                if '=' in ln:
-                    k, v = ln.split('=', 1)
-                    k = k.strip()
-                    v = v.strip()
-                    if k == 'P4PASSWD' and v:
-                        p4.password = v
-                    elif k == 'P4PORT':
-                        p4.port = v
-                    elif k == 'P4USER':
-                        p4.user = v
-    # also respect environment-derived password
+    # load optional p4config file if present (P4CONFIG or /root/.p4config)
+    cfgpath = os.environ.get("P4CONFIG") or "/root/.p4config"
+    cfgfile = Path(cfgpath)
+    if cfgfile.exists():
+        for ln in cfgfile.read_text().splitlines():
+            ln = ln.strip()
+            if not ln or ln.startswith('#'):
+                continue
+            if '=' in ln:
+                k, v = ln.split('=', 1)
+                k = k.strip()
+                v = v.strip()
+                if k == 'P4PASSWD' and v:
+                    p4.password = v
+                elif k == 'P4PORT':
+                    p4.port = v
+                elif k == 'P4USER':
+                    p4.user = v
+    # also respect environment-derived password/tickets
     if password:
         p4.password = password
+    # If P4TICKETS present in env, P4Python will use it automatically
     return p4
 
 
