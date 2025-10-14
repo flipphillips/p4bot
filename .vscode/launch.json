@@ -5,7 +5,7 @@
       "name": "Python: Run test_p4python",
       "type": "debugpy",
       "request": "launch",
-  "program": "${workspaceFolder}/Docker/app/test_p4python.py",
+      "program": "${workspaceFolder}/Docker/app/test_p4python.py",
       "console": "integratedTerminal"
     },
     {

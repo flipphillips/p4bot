@@ -16,8 +16,8 @@ p4bot can surface command results back to a channel or DM.
 1. Slack app with a Slash Command pointing at
    `https://<host>/slack/command`.
 2. The Perforce helper scripts mounted inside the container for development;
-  by default the compose file binds `./app` to `/scripts` when running from
-  the `Docker` directory.
+   by default the compose file binds `./app` to `/scripts` when running from
+   the `Docker` directory.
 
 ## Quick start
 
@@ -124,7 +124,7 @@ environment:
 
 Incoming slash command parameters are appended to the mapped command. If you
 omit a mapping, users must supply the script name in the slash command text
-(```/p4 p4status.sh```).
+(`/p4 p4status.sh`).
 
 ## Notes
 

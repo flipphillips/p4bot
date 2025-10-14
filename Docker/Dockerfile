@@ -1,20 +1,31 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    P4_SCRIPT_ROOT=/scripts
+        PYTHONUNBUFFERED=1 \
+        P4_SCRIPT_ROOT=/scripts \
+        VIRTUAL_ENV=/opt/venv
 
 WORKDIR /srv/p4bot
 
+# Install system build dependencies needed to build P4Python and other wheels
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates wget build-essential python3-dev libssl-dev swig && \
-    rm -rf /var/lib/apt/lists/*
+        apt-get install -y --no-install-recommends \
+            ca-certificates wget build-essential python3-venv python3-dev libssl-dev swig && \
+        rm -rf /var/lib/apt/lists/*
 
+# Create a lightweight Python virtual environment for the app and ensure pip is up-to-date
+RUN python3 -m venv ${VIRTUAL_ENV} && \
+        ${VIRTUAL_ENV}/bin/pip install --upgrade pip setuptools wheel
+
+# Make sure the venv bin directory is on PATH for subsequent RUN steps and for the final image
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+
+# Copy requirements and install into the venv (isolated, avoids global pip warnings)
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install P4Python via pip (Helix API). This requires build deps above.
-RUN pip install --no-cache-dir P4Python || true
+# Install P4Python (Helix API) into the venv
+RUN pip install --no-cache-dir P4Python
 
 # Optional: provide a p4 CLI binary URL at build time using build-arg P4_CLI_URL
 ARG P4_CLI_URL=""
@@ -26,9 +37,8 @@ RUN if [ -n "$P4_CLI_URL" ]; then \
             echo "P4_CLI_URL not provided; p4 client will not be installed in the image"; \
         fi
 
-# If a local asset matching the build arch exists, copy it into the image.
+# If a local asset matching the build arch exists, copy it into the image and pick the right one
 ARG TARGETARCH
-# Copy any provided asset binaries into a temp location and pick the right one
 RUN mkdir -p /opt/p4-assets || true
 COPY assets/p4 /opt/p4-assets/p4
 COPY assets/p4-ARM /opt/p4-assets/p4-ARM
@@ -41,15 +51,13 @@ RUN if [ "${TARGETARCH}" = "arm64" ] && [ -f /opt/p4-assets/p4-ARM ]; then \
         fi && chmod +x /usr/local/bin/p4 || true
 
 # Do not attempt to copy local perforce secrets into the build context.
-# Prefer mounting the development scripts directory (e.g. `Docker/app`)
-# into `/scripts` and keep secrets under `Docker/app/secrets/p4passwd` at runtime.
-# If you intentionally want to embed secrets, place them inside the build
-# context and adjust this Dockerfile accordingly. For typical dev use we
-# read the password from the mounted `/scripts/secrets/p4passwd`.
+# Prefer mounting the development scripts directory (e.g. `Docker/app`) into /scripts
 ENV P4PASSWD_FILE=/scripts/secrets/p4passwd
 
+# Copy the application code (mounted during dev via compose)
 COPY app ./app
 
 EXPOSE 8080
 
+# Default command uses the venv python runtime
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app.server:app"]

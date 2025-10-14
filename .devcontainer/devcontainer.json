@@ -14,7 +14,9 @@
       "settings": {
         "terminal.integrated.shell.linux": "/bin/bash"
       },
-      "extensions": ["ms-python.python"]
+      "extensions": [
+        "ms-python.python"
+      ]
     }
   },
   "remoteUser": "root",
