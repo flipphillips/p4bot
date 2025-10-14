@@ -1,21 +1,24 @@
 {
   "name": "p4bot (devcontainer)",
   "dockerComposeFile": [
-    "Docker/p4bot/docker-compose.yml"
+    "Docker/docker-compose.yml"
   ],
   "service": "p4bot",
   "workspaceFolder": "/workspace",
-  "forwardPorts": [8080],
-  {
-    "name": "p4bot (devcontainer)",
-    "dockerComposeFile": ["Docker/p4bot/docker-compose.yml"],
-    "service": "p4bot",
-    "workspaceFolder": "/workspace",
-    "forwardPorts": [8080],
-    "settings": {
-      "terminal.integrated.shell.linux": "/bin/bash"
-    },
-    "extensions": ["ms-python.python"],
-    "remoteUser": "root"
-  }
-  "workspaceFolder": "/scripts",
+  "forwardPorts": [
+    8080
+  ],
+  "postStartCommand": "/scripts/login.sh || true",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "ms-python.python"
+      ]
+    }
+  },
+  "remoteUser": "root",
+  "shutdownAction": "stopCompose"
+}
