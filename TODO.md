@@ -23,7 +23,6 @@ These items are intentionally deferred so development can focus on getting the a
 - Create deployment guide and registry workflow: add `deploy.md` with steps to build, tag, push to a container registry, and run the image on the lab server.
 - Add convenience Make targets: `rebuild-reopen` and `rebuild-deploy` to automate build, stop, start, and optional push to registry.
 
-
 ---
 
 (If you want this snapshot refreshed later, tell me and I'll update `TODO.md`.)
