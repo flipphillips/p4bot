@@ -1,7 +1,7 @@
 {
   "name": "p4bot (devcontainer)",
   "dockerComposeFile": [
-    "Docker/docker-compose.yml"
+    "../Docker/docker-compose.yml"
   ],
   "service": "p4bot",
   "workspaceFolder": "/workspace",
