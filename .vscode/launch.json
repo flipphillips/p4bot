@@ -2,15 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Run test_p4python",
-      "type": "debugpy",
+      "name": "Python: Run test_p4python (In Container)",
+      "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/Docker/app/test_p4python.py",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {}
+    },
+    {
+      "name": "Python: Run test_p4python (On Host)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/Docker/app/test_p4python.py",
+      "console": "integratedTerminal",
+      "env": {}
     },
     {
       "name": "Python: Module",
-      "type": "debugpy",
+      "type": "python",
       "request": "launch",
       "module": "pdb",
       "console": "integratedTerminal"

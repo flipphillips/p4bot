@@ -12,7 +12,8 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash"
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "python.defaultInterpreterPath": "/opt/venv/bin/python"
       },
       "extensions": [
         "ms-python.python"
