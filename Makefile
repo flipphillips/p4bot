@@ -29,3 +29,12 @@ exec:
 
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
+
+.PHONY: dev dev-test
+dev:
+	docker compose -f $(COMPOSE_FILE) up --build -d
+
+dev-test: dev
+	# Ensure login helper runs then run the P4Python test
+	docker compose -f $(COMPOSE_FILE) exec $(SERVICE) bash -lc "chmod +x /scripts/login.sh && /scripts/login.sh"
+	docker compose -f $(COMPOSE_FILE) exec $(SERVICE) python3 /srv/p4bot/app/test_p4python.py
