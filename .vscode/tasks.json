@@ -1,0 +1,68 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "docker:build",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml build",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:up",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml up --build -d",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "docker:down",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml down",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:login",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"chmod +x /scripts/login.sh && /scripts/login.sh\"",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:test_p4python",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml exec p4bot python3 /srv/p4bot/app/test_p4python.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:p4status",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"/scripts/p4status.sh --limit 3\"",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:logs",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml logs -f",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:exec",
+      "type": "shell",
+      "command": "${input:dockerExecCommand}",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker:dev-test",
+      "type": "shell",
+      "command": "docker compose -f Docker/docker-compose.yml up --build -d && docker compose -f Docker/docker-compose.yml exec p4bot bash -lc \"chmod +x /scripts/login.sh && /scripts/login.sh\" && docker compose -f Docker/docker-compose.yml exec p4bot python3 /srv/p4bot/app/test_p4python.py",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dockerExecCommand",
+      "type": "promptString",
+      "description": "Command to run inside the p4bot service (example: bash -lc 'ls -la /scripts')",
+      "default": "docker compose -f Docker/docker-compose.yml exec p4bot bash -lc 'bash'"
+    }
+  ]
+}
