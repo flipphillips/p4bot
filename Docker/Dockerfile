@@ -41,7 +41,8 @@ RUN if [ "${TARGETARCH}" = "arm64" ] && [ -f /opt/p4-assets/p4-ARM ]; then \
         fi && chmod +x /usr/local/bin/p4 || true
 
 # Do not attempt to copy local perforce secrets into the build context.
-# Prefer mounting `/perforce` (or `perforce/secrets/p4passwd`) at runtime.
+# Prefer mounting the development scripts directory (e.g. `Docker/app`)
+# into `/scripts` and keep secrets under `Docker/app/secrets/p4passwd` at runtime.
 # If you intentionally want to embed secrets, place them inside the build
 # context and adjust this Dockerfile accordingly. For typical dev use we
 # read the password from the mounted `/scripts/secrets/p4passwd`.

@@ -15,8 +15,9 @@ p4bot can surface command results back to a channel or DM.
 
 1. Slack app with a Slash Command pointing at
    `https://<host>/slack/command`.
-2. The Perforce helper scripts mounted inside the container; by default the
-   compose file binds `../../perforce` to `/scripts`.
+2. The Perforce helper scripts mounted inside the container for development;
+  by default the compose file binds `./app` to `/scripts` when running from
+  the `Docker` directory.
 
 ## Quick start
 
@@ -77,7 +78,7 @@ cd Docker/p4bot
 docker build --platform linux/amd64 --build-arg BUILD_EMBED_SECRETS=1 -t local/p4bot:with-secrets .
 ```
 
-This requires that `perforce/p4config` and `perforce/secrets/p4passwd` exist
+This requires that `Docker/app/p4config` and `Docker/app/secrets/p4passwd` exist
 in the build context. They will be copied into the image if present.
 
 ## Health check

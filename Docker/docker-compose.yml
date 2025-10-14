@@ -12,5 +12,5 @@ services:
       P4CLIENT: ""
 
     volumes:
-      - ../../perforce:/scripts
+      - ./app:/scripts
     restart: unless-stopped
