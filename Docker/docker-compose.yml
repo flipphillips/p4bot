@@ -12,6 +12,6 @@ services:
       P4CLIENT: ""
 
     volumes:
-      - ./:/srv/p4bot:cached
+      - ../:/srv/p4bot:cached
       - ./app:/scripts
     restart: unless-stopped
