@@ -4,7 +4,7 @@
     "../Docker/docker-compose.yml"
   ],
   "service": "p4bot",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/srv/p4bot",
   "forwardPorts": [
     8080
   ],
