@@ -9,7 +9,6 @@ services:
       - ../:/srv/p4bot:cached
       - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4tickets:/root/.p4tickets:ro
       - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4config:/root/.p4config:ro
-      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4trust:/root/.p4trust:ro
     ports:
       - "8080:8080"
     environment:
@@ -18,3 +17,5 @@ services:
     command: ["/bin/sh", "-c", "tail -f /dev/null"]
     stdin_open: true
     tty: true
+
+volumes: {}

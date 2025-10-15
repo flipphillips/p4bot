@@ -2,39 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Run test_p4python (In Container)",
-      "type": "python",
+      "name": "Python: Current File",
+      "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/Docker/app/test_p4python.py",
+      "program": "${file}",
       "console": "integratedTerminal",
       "env": {}
-    },
-    {
-      "name": "Python: Run test_p4python (On Host)",
-      "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/Docker/app/test_p4python.py",
-      "console": "integratedTerminal",
-      "env": {}
-    },
-    {
-      "name": "Python: Module",
-      "type": "python",
-      "request": "launch",
-      "module": "pdb",
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Docker Compose: Up (dev)",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}",
-      "preLaunchTask": "docker-compose: up (dev)",
-      "runtimeExecutable": "echo",
-      "args": [
-        "Compose up started"
-      ],
-      "console": "integratedTerminal"
     }
   ]
 }
