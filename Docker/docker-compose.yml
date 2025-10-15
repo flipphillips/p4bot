@@ -6,7 +6,13 @@ services:
       - "8080:8080"
     environment:
       - SLACK_COMMAND_MAP={}
+      - P4TICKETS=/root/.p4tickets
+      - P4TRUST=/root/.p4trust
+      - P4CONFIG=/root/.p4config
     volumes:
       - ../:/srv/p4bot:cached
+      - ./secrets/p4tickets:/root/.p4tickets:ro
+      - ./secrets/p4config:/root/.p4config:ro
+      - ./secrets/p4trust:/root/.p4trust:rw
     restart: unless-stopped
     command: ["gunicorn", "-b", "0.0.0.0:8080", "app.server:app"]

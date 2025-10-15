@@ -7,13 +7,16 @@ services:
     volumes:
       # Bind the repository root into the container so the whole repo (including .vscode, .github) is available
       - ../:/srv/p4bot:cached
-      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4tickets:/root/.p4tickets:ro
-      - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4config:/root/.p4config:ro
+      - ./secrets/p4tickets:/root/.p4tickets:ro
+      - ./secrets/p4config:/root/.p4config:ro
+      - ./secrets/p4trust:/root/.p4trust:rw
     ports:
       - "8080:8080"
     environment:
       FLASK_ENV: development
       P4CONFIG: "/root/.p4config"
+      P4TICKETS: "/root/.p4tickets"
+      P4TRUST: "/root/.p4trust"
     command: ["/bin/sh", "-c", "tail -f /dev/null"]
     stdin_open: true
     tty: true
