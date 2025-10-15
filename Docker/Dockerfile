@@ -23,13 +23,6 @@ ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Do not attempt to copy local perforce secrets into the build context.
-# Prefer mounting perforce config/ticket files into the container (P4CONFIG/P4TICKETS)
-ENV P4PASSWD_FILE=/root/.p4tickets
-
-# Copy the application code (mounted during dev via compose)
-COPY app ./app
-
 EXPOSE 8080
 
 # Default command uses the venv python runtime

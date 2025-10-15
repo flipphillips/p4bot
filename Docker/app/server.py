@@ -111,9 +111,6 @@ def _parse_command_map(raw: str) -> dict[str, list[str]]:
 def _format(message: str):
     return {"response_type": "ephemeral", "text": message}
 
-# perforce things
-
-P4PASSWD_FILE = os.environ.get("P4PASSWD_FILE", "/root/.p4tickets")
 
 def read_password(path: str) -> str:
     # Be defensive: the mounted path may be a directory (user mounted a folder)
@@ -132,8 +129,6 @@ def read_password(path: str) -> str:
     if data.startswith("password="):
         return data.split("=", 1)[1]
     return data
-
-password = read_password(P4PASSWD_FILE)
 
 ### P4 helpers ---------------------------------------------------------------
 

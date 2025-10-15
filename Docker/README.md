@@ -54,22 +54,6 @@ Docker/p4bot/assets/p4-amd64   # linux/amd64 p4 binary
 Docker/p4bot/assets/p4         # generic p4 binary
 ```
 
-The Dockerfile will copy `assets/p4-${TARGETARCH}` into `/usr/local/bin/p4`
-during build when present, or `assets/p4` as a fallback. When building for
-Apple Silicon natively, build with `--platform linux/arm64` so `TARGETARCH`
-matches `arm64` and the ARM binary will be used.
-
-### Embedding secrets into the image (not recommended for production)
-
-If you want a fully self-contained image that includes the `perforce/p4config`
-and `perforce/secrets/p4passwd` files baked in, you can enable embedding at
-build time. This will copy the files into `/etc/p4` inside the image and set
-`P4PASSWD_FILE=/etc/p4/p4passwd` so the runtime uses the embedded password.
-
-Warning: embedding secrets into images is convenient for testing but is
-insecure for production. Prefer bind-mounting secrets or using Docker
-secrets/secret managers in production.
-
 Build with embedded secrets (example):
 
 ```bash

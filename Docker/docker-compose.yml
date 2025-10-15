@@ -8,6 +8,5 @@ services:
       - SLACK_COMMAND_MAP={}
     volumes:
       - ../:/srv/p4bot:cached
-      - ./app:/srv/p4bot/app:cached
     restart: unless-stopped
     command: ["gunicorn", "-b", "0.0.0.0:8080", "app.server:app"]

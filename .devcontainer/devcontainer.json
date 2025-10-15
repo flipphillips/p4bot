@@ -9,25 +9,8 @@
     8080
   ],
   "mounts": [
-    "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,consistency=cached",
-    "source=${localWorkspaceFolder}/app,target=/srv/p4bot/app,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder},target=/srv/p4bot,type=bind,consistency=cached"
   ],
-  "remoteEnv": {
-    "SSH_AUTH_SOCK": "/ssh-agent",
-    "P4TICKETS": "/root/.p4tickets",
-    "P4CONFIG": "/root/.p4config"
-  },
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash",
-        "python.defaultInterpreterPath": "/opt/venv/bin/python"
-      },
-      "extensions": [
-        "ms-python.python"
-      ]
-    }
-  },
   "remoteUser": "root",
   "shutdownAction": "stopCompose"
 }

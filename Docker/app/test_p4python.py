@@ -6,7 +6,6 @@ from P4 import P4, P4Exception
 
 # Minimal p4python test: read env, connect, run info. Auto-trust once on SSL
 # errors and persist a small container-local marker.
-
 P4PORT = os.environ.get("P4PORT")
 P4USER = os.environ.get("P4USER")
 P4TICKETS = os.environ.get("P4TICKETS")
@@ -44,7 +43,10 @@ if not P4PORT:
 
 os.environ["P4TICKETS"] = P4TICKETS
 
-p4 = P4()
+p4 = P4(debug=3)
+
+config = p4.p4config_file
+
 p4.port = P4PORT
 p4.user = P4USER
 
@@ -54,6 +56,7 @@ def out_err(msg):
 
 try:
     p4.connect()
+    client=p4.fetch_client()
     info = p4.run("info")
     p4.disconnect()
     print(json.dumps({"ok": True, "info": info}))

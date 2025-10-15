@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
     image: p4bot:dev
     volumes:
-      - ./app:/srv/p4bot/app:cached
+      # Bind the repository root into the container so the whole repo (including .vscode, .github) is available
+      - ../:/srv/p4bot:cached
       - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4tickets:/root/.p4tickets:ro
       - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4config:/root/.p4config:ro
       - /Users/fxpppr/GitHub/p4bot/Docker/secrets/p4trust:/root/.p4trust:ro
