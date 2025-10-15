@@ -12,5 +12,13 @@
     "source=${localWorkspaceFolder},target=/srv/p4bot,type=bind,consistency=cached"
   ],
   "remoteUser": "root",
-  "shutdownAction": "stopCompose"
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.vscode-pylance",
+        "ms-python.python"
+      ]
+    }
+  }
 }
