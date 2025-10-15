@@ -9,14 +9,12 @@ services:
       - ../:/srv/p4bot:cached
       - ./secrets/p4tickets:/root/.p4tickets:ro
       - ./secrets/p4config:/root/.p4config:ro
-      - ./secrets/p4trust:/root/.p4trust:rw
     ports:
       - "8080:8080"
+      - "5678:5678"
     environment:
       FLASK_ENV: development
       P4CONFIG: "/root/.p4config"
-      P4TICKETS: "/root/.p4tickets"
-      P4TRUST: "/root/.p4trust"
     command: ["/bin/sh", "-c", "tail -f /dev/null"]
     stdin_open: true
     tty: true

@@ -21,7 +21,7 @@ Project-specific conventions
 Developer workflows & common commands
 
 - Priority: I am using VS Code Insiders, I Prefer using those tools when possible and to take advantage of features it provides -especially- via devcontainers.
-- I prefer vs code 'tasks' over CLI and Makefile.
+- I prefer vscode 'tasks' over CLI and Makefile.
 - I -am- very CLI / UNIX proficient but prefer to take advantage of VSCode's features and integrations.
 - Build and run (compose): `docker compose up --build -d` (See top-level `README.md`). The service listens on 8080.
 - Development (live code): `docker compose -f docker-compose.dev.yml up --build` uses `gunicorn --reload` and mounts source for live edits.

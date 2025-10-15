@@ -8,6 +8,21 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "env": {}
+    },
+    {
+      "name": "Attach to p4bot (Container)",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/srv/p4bot"
+        }
+      ]
     }
   ]
 }

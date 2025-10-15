@@ -79,13 +79,9 @@ def create_app() -> Flask:
 
 def _p4_opened(pathspec: str) -> Iterable[str]:
     """Yield human-friendly lines for opened files under pathspec using P4Python.
-
-    Use P4(debug=3) and let P4Python pick up `P4CONFIG` or environment values like
-    `P4PORT`/`P4USER` automatically (same behavior as `simple.py`). Avoid forcing
-    overrides from the environment here unless explicitly needed.
     """
-    # create P4 like simple.py so p4config is respected
-    p4 = P4(debug=3)
+
+    p4 = P4(debug=0)
 
     try:
         p4.connect()
