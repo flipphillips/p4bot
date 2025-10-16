@@ -1,0 +1,18 @@
+[Unit]
+Description=Perforce Slack Bot (Socket Mode)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=perforce
+Group=perforce
+WorkingDirectory=/p4/scripts
+EnvironmentFile=/p4/scripts/slackbot.env
+ExecStart=/usr/bin/python3 /p4/scripts/slack-files.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

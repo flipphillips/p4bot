@@ -4,6 +4,9 @@
 !**/secrets/.gitkeep
 !**/secrets/README.md
 
+# Ignore local Slack credentials
+slackbot.env
+
 # Ignore shipped binary assets directories
 **/assets/*
 !**/assets/.gitkeep
