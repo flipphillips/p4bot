@@ -17,3 +17,7 @@ Docker/app/p4config
 # OS and python cache
 .DS_Store
 __pycache__/
+
+# Virtual environments
+venv/
+.venv/
