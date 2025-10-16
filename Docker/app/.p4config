@@ -1,5 +1,0 @@
-  P4PORT=ssl:mss-perforce-01.rit.edu:1666
-  P4USER=p4status
-  P4TICKETS=/root/.p4tickets
-  P4CLIENT=poo
-  

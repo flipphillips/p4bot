@@ -4,11 +4,6 @@
 !**/secrets/.gitkeep
 !**/secrets/README.md
 
-# Ignore built perforce config (local perforce config)
-# If you store runtime p4 config in the app directory during development,
-# ignore it here so local secrets are not accidentally committed.
-Docker/app/p4config
-
 # Ignore shipped binary assets directories
 **/assets/*
 !**/assets/.gitkeep
